@@ -1,0 +1,102 @@
+{
+    "data": [
+        {
+            "score": 0,
+            "speed": 100,
+            "fishThreshold": 10,
+            "bg": "blue_ocean",
+            "newFish": {
+                "tile": 73,
+                "level": 1,
+                "gain": 1,
+                "color": "#0000FF"
+            },
+            "playerTex": "player_1",
+            "playerLevel": 1
+        },
+        {
+            "score": 5,
+            "speed": 150,
+            "fishThreshold": 10,
+            "bg": "deep_ocean",
+            "newFish": {
+                "tile": 75,
+                "level": 2,
+                "gain": 2,
+                "color": "#0080FF"
+            },
+            "playerTex": "player_2",
+            "playerLevel": 1
+        },
+        {
+            "score": 150,
+            "speed": 200,
+            "fishThreshold": 10,
+            "bg": "sunset_ocean",
+            "newFish": {
+                "tile": 77,
+                "level": 3,
+                "gain": 3,
+                "color": "#FFA500"
+            },
+            "playerTex": "player_3",
+            "playerLevel": 2
+        },
+        {
+            "score": 300,
+            "speed": 300,
+            "fishThreshold": 79,
+            "bg": "mystic_ocean",
+            "newFish": {
+                "tile": 3,
+                "level": 4,
+                "gain": 5,
+                "color": "#FF00FF"
+            },
+            "playerTex": "player_4",
+            "playerLevel": 3
+        },
+        {
+            "score": 500,
+            "speed": 400,
+            "fishThreshold": 60,
+            "bg": "stormy_ocean",
+            "newFish": {
+                "tile": 81,
+                "level": 5,
+                "gain": 8,
+                "color": "#00FFFF"
+            },
+            "playerTex": "player_5",
+            "playerLevel": 4
+        },
+        {
+            "score": 750,
+            "speed": 500,
+            "fishThreshold": 70,
+            "bg": "frozen_ocean",
+            "newFish": {
+                "tile": 87,
+                "level": 6,
+                "gain": 12,
+                "color": "#FFFF00"
+            },
+            "playerTex": "player_6",
+            "playerLevel": 5
+        },
+        {
+            "score": 1000,
+            "speed": 600,
+            "fishThreshold": 96,
+            "bg": "abyss_ocean",
+            "newFish": {
+                "tile": 6,
+                "level": 7,
+                "gain": 20,
+                "color": "#FF0000"
+            },
+            "playerTex": "player_7",
+            "playerLevel": 6
+        }
+    ]
+}

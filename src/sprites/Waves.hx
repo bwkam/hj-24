@@ -1,4 +1,4 @@
-package;
+package sprites;
 
 import echo.Body;
 import echo.World;
@@ -8,7 +8,7 @@ import peote.view.Color;
 import peote.view.Element;
 import peote.view.Program;
 
-class Sprite implements Element {
+class Waves implements Element {
 	@posX @varying @set("Position") public var x:Float = 0.0;
 	@posY @varying @set("Position") public var y:Float = 0.0;
 
@@ -20,17 +20,21 @@ class Sprite implements Element {
 	@pivotX @const @formula("w * 0.5") public var pivotX:Float = 0.0;
 	@pivotY @const @formula("h * 0.5") public var pivotY:Float = 0.0;
 
-	@rotation var angle:Float = 0.0;
+	@texTile() public var tile:Int = 88;
+    @texSlot public var slot:Int = 0;
 
-	@texTile() public var tile:Int = 0;
+    @texSizeX @const @formula("64.0/(w/16.0)") public var twOffset:Int;
+    @texSizeY @const @formula("64.0/(h/16.0)") public var thOffset:Int;
+
+    var OPTIONS = { texRepeatX:true, texRepeatY:true, blend:true };
 
 
 	public static var program:Program;
 
 	public var body:Body;
-	public var buffer:Buffer<Sprite>;
+	public var buffer:Buffer<Waves>;
 
-	public function new(buffer:Buffer<Sprite>, world:World, c:Color, _options:BodyOptions) {
+	public function new(buffer:Buffer<Waves>, world:World, c:Color, _options:BodyOptions) {
 		var options = _options;
 
 		this.h = options.shape.height;
@@ -59,7 +63,7 @@ class Sprite implements Element {
 		this.body.remove();
 	}
 
-	public function onMove(buffer:Buffer<Sprite>, x:Float, y:Float) {
+	public function onMove(buffer:Buffer<Waves>, x:Float, y:Float) {
 		setPosition(x, y);
 		buffer.updateElement(this);
 	}

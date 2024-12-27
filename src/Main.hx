@@ -8,18 +8,40 @@ import echo.World;
 import echo.math.Vector2;
 import fishes.*;
 import haxe.CallStack;
+import haxe.Json;
+import js.html.FileSystem;
 import lime.app.Application;
 import lime.ui.KeyCode;
 import lime.ui.KeyModifier;
 import lime.ui.Window;
+import lime.utils.AssetType;
+import lime.utils.Assets;
 import peote.view.Buffer;
 import peote.view.Color;
 import peote.view.Display;
 import peote.view.PeoteView;
 import peote.view.Program;
 import sprites.Player;
+import sprites.Sea;
 
 using Lambda;
+
+typedef Datas = {
+	data:Array<Data>,
+}
+
+typedef Data = {
+	score:Int,
+	speed:Int,
+	fishThreshold:Int,
+	bg:String,
+	newFish:{
+		tile:Int, level:Int, gain:Int, distribution:Map<Int, Int>, color:String,
+	},
+	playerTex:String,
+	playerLevel:Int
+}
+
 
 class Main extends Application {
 	var world:World;
@@ -33,13 +55,13 @@ class Main extends Application {
 	var times:Int = 0;
 	var spawnFactor:Float = 0.7;
 	var player:Player;
-	var sea:Sprite;
+	var sea:Sea;
 	var zoom = 1.0;
 	var fishes:Fishes;
+	var data:Array<Data>;
+	var data2:Array<Data>;
+	var loaded:Bool;
 
-	// TODO: so for example AND BOOST AND HEALTH UI AND PERIODIC INCREASE IN SPEED
-	// level 1 fish: 80 percent
-	// level 2 fish: 10 percent
 	var unlockedFishes:Fishes;
 
 	public function new() {
@@ -50,7 +72,12 @@ class Main extends Application {
 		switch (window.context.type) {
 			case WEBGL, OPENGL, OPENGLES:
 				try {
-					start(window);
+					preloader.onComplete.add(() -> {
+						data = Json.parse(Assets.getText("assets/data.json")).data;
+						data2 = Json.parse(Assets.getText("assets/data.json")).data;
+						start(window);
+						loaded = true;
+					});
 				} catch (_)
 					trace(CallStack.toString(CallStack.exceptionStack()), _);
 			default:
@@ -60,11 +87,12 @@ class Main extends Application {
 	
 	public function start(window:Window) {
 		initEcho();
-		
+
 		var peoteView = new PeoteView(window);
-		
+		// peoteView.start();
+
 		playerDisplay = new PlayerDisplay(0, 0, window.width, window.height, world);
-		seaDisplay = new SeaDisplay(0, 0, window.width, window.height, world, Color.WHITE);
+		seaDisplay = new SeaDisplay(0, 0, window.width * 2, window.height, world, Color.WHITE);
 		uiDisplay = new UI(0, 0, window.width, window.height);
 
 		playerDisplay.zoom = zoom;
@@ -114,9 +142,11 @@ class Main extends Application {
 				var fishIndex = fishes.bodies.findIndex(x -> b == x); 
 				var fish = fishes.fishes[fishIndex]; 
 			
-				if (player.level > fish.level) {
-					player.score += fish.level * 2;
+				if (player.level >= fish.level) {
+					player.score += 1;
 					uiDisplay.updateScore(player.score);
+					fishes.fishes.remove(fish);
+					fishes.bodies.remove(fish.body);
 					fish.kill();
 				}
 			},
@@ -135,12 +165,29 @@ class Main extends Application {
 
 
 	override function update(dt:Float) {
-		world.step(dt / 1000);
-		seaDisplay.update();
+		if (loaded) {
+			world.step(dt / 1000);
+			seaDisplay.update();
+			playerDisplay.update();
 
-		// keep from top to bottom (great to least)
-		if (player.score > 10) fishes.speed = 400*2;
-		if (player.score > 5) fishes.speed = 400;
+			var i = 0;
+			for (d in data) {
+				if (player.score >= d.score) {
+					fishes.speed = d.speed;
+					seaDisplay.fishThreshold = d.fishThreshold;
+					player.level = d.playerLevel;
+					fishes.unlockFish({
+						tile: d.newFish.tile,
+						level: d.newFish.level,
+						gain: d.newFish.gain,
+					});
+					seaDisplay.curData = data2.slice(0, i + 1 + (data2.length - data.length));
+					seaDisplay.redistribute();
+					data.shift();
+				}
+				i++;
+			}
+		}
 	}
 
 	override function onKeyUp(keyCode:KeyCode, modifier:KeyModifier) {

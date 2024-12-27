@@ -22,28 +22,29 @@ class PlayerDisplay extends Display {
 		this.buffer = new Buffer<Sprite>(1, 1, true);
         this.program = new Program(this.buffer);
 
-        var player = new Player(this.buffer, world, Color.RED, {
-            x: 20,
-            y: 0,
-            mass: 10,
-            shape: {
-                type: RECT,
-                width: 20,
-                height: 20,
-            },
-        });
+		var player = new Player(this.buffer, world, Color.RED, {
+			x: 20,
+			y: 0,
+			mass: 10,
+			shape: {
+				type: RECT,
+				width: 20,
+				height: 20,
+			},
+		});
 
-        player.vy = 500;
-        player.vx = 200;
-        player.level = 2;
+		player.vy = 300;
+		player.vx = 200;
+		player.level = 2;
 
-        this.addProgram(this.program);
-        this.members = {
-            player: player,
-        }
+		this.addProgram(this.program);
+		this.members = {
+			player: player,
+		}
     }
 
-    public function update() {
+	public function update() {
+		this.members.player.update();
         this.buffer.update();
     }
 }

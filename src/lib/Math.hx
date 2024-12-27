@@ -37,4 +37,40 @@ class Math {
 	public static function lerp(a:Float, b:Float, t:Float):Float {
         return a + (b - a) * t;
     }
+	// public static function distribute(levels:Int, base:Int, decay:Int) {
+	// 	var weights:Map<Int, Float> = new Map();
+	// 	for (level in 0...levels) {
+	// 		var weight = base * std.Math.pow(1 - (decay / 100), level);
+	// 		weights.set(level + 1, (weight / base) * 100);
+	// 	}
+	// 	return weights;
+	// }
+
+	public static function distribute(value:Float, levels:Int, decay:Float):Map<Int, Float> {
+		var weights:Map<Int, Float> = new Map();
+		var totalWeight:Float = 0;
+
+		// Calculate the total weight based on decay
+		for (level in 0...levels) {
+			totalWeight += std.Math.pow(1 - decay, level);
+		}
+
+		// Distribute the value among levels proportionally
+		for (level in 0...levels) {
+			var weight = std.Math.pow(1 - decay, level) / totalWeight;
+			weights.set(level + 1, value * weight);
+		}
+
+		return weights;
+	}
+
+	public static function hexToRgb(hex:String):{r:Int, g:Int, b:Int} {
+		var hexStr = hex.substr(1); // Remove the '#' character
+		var r = Std.parseInt('0x' + hexStr.substr(0, 2));
+		var g = Std.parseInt('0x' + hexStr.substr(2, 2));
+		var b = Std.parseInt('0x' + hexStr.substr(4, 2));
+
+		return {r: r, g: g, b: b};
+	}
+	
 }

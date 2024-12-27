@@ -9,6 +9,8 @@ import peote.view.Display;
 import peote.view.Program;
 import sprites.Fish;
 
+using Lambda;
+
 class Fishes {
 	public var buffer:Buffer<Sprite>;
 	public var fishes:Array<Fish> = [];
@@ -16,7 +18,8 @@ class Fishes {
 	public var display:Display;
 	public var world:World;
 	public var bodies:Array<Body> = [];
-	public var speed(default, set):Int = -100;
+	public var speed(default, set):Int = -800;
+	public var activeFishes:Array<FishConfig> = [];
 
 	public function new(display:Display, world:World, buffer:Buffer<Sprite>, program:Program) {
 		this.display = display;
@@ -26,7 +29,6 @@ class Fishes {
 	}
 
 	function set_speed(newSpeed:Int) {
-		trace("changing speed");
 		for (b in this.bodies) {
 			b.velocity.x = this.speed;
 		}
@@ -34,14 +36,22 @@ class Fishes {
 		return this.speed = -newSpeed;
 	}
 
-	public function addFish(c:Color, opts:BodyOptions) {
-		var fish = new Fish(this.buffer, this.world, c, opts);
+	public function addFish(c:Color, config:FishConfig, opts:BodyOptions) {
+		var fish = new Fish(this.buffer, this.world, c, config, opts);
 		bodies.push(fish.body);
 		fishes.push(fish);
 	}
-	
-	
-	public function repeat(settings:{c:Color, w:Float, h:Float, level:Int, x:Void->Float, y:Void->Float}, n:Int) {
+	public function unlockFish(config:FishConfig) {
+		activeFishes.push(config);
+	}
+
+	public function repeat(settings:{
+		c:Color,
+		w:Float,
+		h:Float,
+		x:Void->Float,
+		y:Void->Float
+	}, config:FishConfig, n:Int) {
 		for (_ in 0...n) {
             var opts:BodyOptions = {
                 x: settings.x(), 
@@ -56,7 +66,7 @@ class Fishes {
 				},
             };
 
-			addFish(settings.c, opts);
+			addFish(settings.c, config, opts);
 		}
 	}
 }
