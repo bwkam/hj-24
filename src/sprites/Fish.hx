@@ -10,6 +10,7 @@ typedef FishConfig = {
 	tile:Int,
 	level:Int,
 	gain:Int,
+	damage:Int,
 }
 
 class Fish extends Sprite {
@@ -17,8 +18,10 @@ class Fish extends Sprite {
 	public var tileNumber:Int;
 	public var gain:Int;
 	public var check:Bool = true;
+	public var isSecret:Bool = false;
+	public var damage:Int;
 
-	override public function new(buffer:Buffer<Sprite>, world:World, color:Color, config:FishConfig, options:BodyOptions) {
+	override public function new(buffer:Buffer<Sprite>, world:World, color:Color, config:FishConfig, options:BodyOptions, ?secret:Bool = false) {
 		super(buffer, world, color, options);
 		this.buffer = buffer;
 		this.level = config.level;
@@ -26,7 +29,10 @@ class Fish extends Sprite {
 		this.gain = config.gain;
 		this.tile = config.tile;
 		this.color = Color.WHITE;
+		this.damage = config.damage;
 		this.w = this.w * -1;
+		if (secret != null)
+			isSecret = secret;
 	}
 
 	public function update() {

@@ -4,11 +4,12 @@
             "score": 0,
             "speed": 100,
             "fishThreshold": 10,
-            "bg": "blue_ocean",
+            "bg": "backgroundEmpty.png",
             "newFish": {
                 "tile": 73,
                 "level": 1,
                 "gain": 1,
+                "damage": 0,
                 "color": "#0000FF"
             },
             "playerTex": "player_1",
@@ -18,11 +19,12 @@
             "score": 5,
             "speed": 150,
             "fishThreshold": 10,
-            "bg": "deep_ocean",
+            "bg": "backgroundColorForest.png",
             "newFish": {
                 "tile": 75,
                 "level": 2,
                 "gain": 2,
+                "damage": 10,
                 "color": "#0080FF"
             },
             "playerTex": "player_2",
@@ -31,12 +33,13 @@
         {
             "score": 150,
             "speed": 200,
-            "fishThreshold": 10,
-            "bg": "sunset_ocean",
+            "fishThreshold": 20,
+            "bg": "backgroundColorDesert.png",
             "newFish": {
                 "tile": 77,
                 "level": 3,
                 "gain": 3,
+                "damage": 15,
                 "color": "#FFA500"
             },
             "playerTex": "player_3",
@@ -45,12 +48,13 @@
         {
             "score": 300,
             "speed": 300,
-            "fishThreshold": 79,
-            "bg": "mystic_ocean",
+            "fishThreshold": 20,
+            "bg": "backgroundColorGrass.png",
             "newFish": {
                 "tile": 3,
                 "level": 4,
                 "gain": 5,
+                "damage": 20,
                 "color": "#FF00FF"
             },
             "playerTex": "player_4",
@@ -59,12 +63,13 @@
         {
             "score": 500,
             "speed": 400,
-            "fishThreshold": 60,
-            "bg": "stormy_ocean",
+            "fishThreshold": 20,
+            "bg": "backgroundColorFall.png",
             "newFish": {
                 "tile": 81,
                 "level": 5,
                 "gain": 8,
+                "damage": 25,
                 "color": "#00FFFF"
             },
             "playerTex": "player_5",
@@ -73,12 +78,13 @@
         {
             "score": 750,
             "speed": 500,
-            "fishThreshold": 70,
-            "bg": "frozen_ocean",
+            "fishThreshold": 20,
+            "bg": "colored_forest.png",
             "newFish": {
                 "tile": 87,
                 "level": 6,
                 "gain": 12,
+                "damage": 30,
                 "color": "#FFFF00"
             },
             "playerTex": "player_6",
@@ -87,12 +93,13 @@
         {
             "score": 1000,
             "speed": 600,
-            "fishThreshold": 96,
-            "bg": "abyss_ocean",
+            "fishThreshold": 20,
+            "bg": "colored_castle.png",
             "newFish": {
                 "tile": 6,
                 "level": 7,
                 "gain": 20,
+                "damage": 35,
                 "color": "#FF0000"
             },
             "playerTex": "player_7",

@@ -36,8 +36,8 @@ class Fishes {
 		return this.speed = -newSpeed;
 	}
 
-	public function addFish(c:Color, config:FishConfig, opts:BodyOptions) {
-		var fish = new Fish(this.buffer, this.world, c, config, opts);
+	public function addFish(c:Color, config:FishConfig, opts:BodyOptions, ?secret:Bool = false) {
+		var fish = new Fish(this.buffer, this.world, c, config, opts, secret);
 		bodies.push(fish.body);
 		fishes.push(fish);
 	}
@@ -52,6 +52,7 @@ class Fishes {
 		x:Void->Float,
 		y:Void->Float
 	}, config:FishConfig, n:Int) {
+		var _opts = null;
 		for (_ in 0...n) {
             var opts:BodyOptions = {
                 x: settings.x(), 
@@ -66,6 +67,7 @@ class Fishes {
 				},
             };
 
+			_opts = opts;
 			addFish(settings.c, config, opts);
 		}
 	}

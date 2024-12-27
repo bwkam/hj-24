@@ -36,7 +36,7 @@ typedef Data = {
 	fishThreshold:Int,
 	bg:String,
 	newFish:{
-		tile:Int, level:Int, gain:Int, distribution:Map<Int, Int>, color:String,
+		tile:Int, level:Int, gain:Int, distribution:Map<Int, Int>, color:String, damage:Int,
 	},
 	playerTex:String,
 	playerLevel:Int
@@ -89,11 +89,11 @@ class Main extends Application {
 		initEcho();
 
 		var peoteView = new PeoteView(window);
-		// peoteView.start();
+		peoteView.start();
 
 		playerDisplay = new PlayerDisplay(0, 0, window.width, window.height, world);
 		seaDisplay = new SeaDisplay(0, 0, window.width * 2, window.height, world, Color.WHITE);
-		uiDisplay = new UI(0, 0, window.width, window.height);
+		uiDisplay = new UI(window, 0, 0, window.width, window.height);
 
 		playerDisplay.zoom = zoom;
 		seaDisplay.zoom = zoom;
@@ -139,15 +139,19 @@ class Main extends Application {
 		world.listen(player.body, fishes.bodies, {
 			separate: false,
 			enter: (a, b, c) -> {
+				trace(player.health);
 				var fishIndex = fishes.bodies.findIndex(x -> b == x); 
 				var fish = fishes.fishes[fishIndex]; 
 			
 				if (player.level >= fish.level) {
 					player.score += 1;
-					uiDisplay.updateScore(player.score);
+					uiDisplay.updateScore(player.score, fish);
 					fishes.fishes.remove(fish);
 					fishes.bodies.remove(fish.body);
 					fish.kill();
+				} else {
+					player.health -= fish.damage;
+					uiDisplay.updateHealth(player.health);
 				}
 			},
 		});
@@ -169,10 +173,12 @@ class Main extends Application {
 			world.step(dt / 1000);
 			seaDisplay.update();
 			playerDisplay.update();
+			uiDisplay.updateIcon();
 
 			var i = 0;
 			for (d in data) {
 				if (player.score >= d.score) {
+					seaDisplay.bg = d.bg;
 					fishes.speed = d.speed;
 					seaDisplay.fishThreshold = d.fishThreshold;
 					player.level = d.playerLevel;
@@ -180,6 +186,7 @@ class Main extends Application {
 						tile: d.newFish.tile,
 						level: d.newFish.level,
 						gain: d.newFish.gain,
+						damage: d.newFish.damage,
 					});
 					seaDisplay.curData = data2.slice(0, i + 1 + (data2.length - data.length));
 					seaDisplay.redistribute();
