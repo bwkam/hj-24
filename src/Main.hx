@@ -11,6 +11,7 @@ import haxe.CallStack;
 import haxe.Json;
 import js.html.FileSystem;
 import lime.app.Application;
+import lime.ui.Joystick;
 import lime.ui.KeyCode;
 import lime.ui.KeyModifier;
 import lime.ui.Window;
@@ -23,6 +24,7 @@ import peote.view.PeoteView;
 import peote.view.Program;
 import sprites.Player;
 import sprites.Sea;
+import sprites.Waves;
 
 using Lambda;
 
@@ -56,11 +58,14 @@ class Main extends Application {
 	var spawnFactor:Float = 0.7;
 	var player:Player;
 	var sea:Sea;
+	var waves:Waves;
 	var zoom = 1.0;
 	var fishes:Fishes;
 	var data:Array<Data>;
 	var data2:Array<Data>;
 	var loaded:Bool;
+	var shoreLine:Float = 315;
+	var peoteView:PeoteView;
 
 	var unlockedFishes:Fishes;
 
@@ -88,7 +93,7 @@ class Main extends Application {
 	public function start(window:Window) {
 		initEcho();
 
-		var peoteView = new PeoteView(window);
+		peoteView = new PeoteView(window);
 		peoteView.start();
 
 		playerDisplay = new PlayerDisplay(0, 0, window.width, window.height, world);
@@ -105,10 +110,23 @@ class Main extends Application {
 		player = playerDisplay.members.player;
 		sea = seaDisplay.members.sea;
 		fishes = seaDisplay.members.fishes;
+		waves = seaDisplay.members.waves;
+
+		world.listen(player.body, waves.body, {
+			separate: false,
+			correction_threshold: 10,
+			enter: (a, b, c) -> {
+				trace("entering shore");
+			},
+			exit: (a, b) -> {
+				trace("leaving shore");
+			},
+		});
 
 		world.listen(player.body, sea.body, {
 			separate: false,
 			enter: (a, b, c) -> {
+				player.inAir = false;
 				a.material.gravity_scale = 0;
 				player.color = Color.RED;
 				// a.velocity.x = player.vx;
@@ -129,9 +147,9 @@ class Main extends Application {
 				}
 			},
 			exit: (a, b) -> {
-				trace("stopped colliding");
 				a.material.gravity_scale = 1.0;
 				player.color = Color.ORANGE;
+				player.inAir = true;
 				playerDisplay.update();
 			}
 		});
@@ -139,7 +157,7 @@ class Main extends Application {
 		world.listen(player.body, fishes.bodies, {
 			separate: false,
 			enter: (a, b, c) -> {
-				trace(player.health);
+				// trace(player.health);
 				var fishIndex = fishes.bodies.findIndex(x -> b == x); 
 				var fish = fishes.fishes[fishIndex]; 
 			
@@ -174,11 +192,36 @@ class Main extends Application {
 			seaDisplay.update();
 			playerDisplay.update();
 			uiDisplay.updateIcon();
+			uiDisplay.updateTitle(peoteView.time);
+
+			if (player.inAir) {
+				// var maxHeight = player.vy - lib.Math.deltaDx(player.vy, 2, world.gravity.y);
+				// trace("Max Height: ", maxHeight);
+				// trace("Player y: ", player.vy);
+				// trace("Player V: ", player.vy);
+				if (player.y <= 200) {
+					player.reachedMax = true;
+				}
+			} else {
+				player.reachedMax = false;
+			}
+
+			if (player.inAir) {
+				if (player.health < 100)
+					player.health += 0.05;
+				uiDisplay.updateHealth(player.health);
+			} else {
+				player.health -= 0.1;
+				uiDisplay.updateHealth(player.health);
+			}
 
 			var i = 0;
 			for (d in data) {
 				if (player.score >= d.score) {
 					seaDisplay.bg = d.bg;
+					uiDisplay.newLevel("LEVEL 1");
+					uiDisplay.startTime = peoteView.time;
+					uiDisplay.endTime = uiDisplay.startTime + 5;
 					fishes.speed = d.speed;
 					seaDisplay.fishThreshold = d.fishThreshold;
 					player.level = d.playerLevel;
@@ -202,6 +245,6 @@ class Main extends Application {
 	}
 
 	override function onKeyDown(keyCode:KeyCode, modifier:KeyModifier) {
-		player.onKeyDown(keyCode, modifier);
+		player.onKeyDown(keyCode, modifier, shoreLine);
 	}
 }

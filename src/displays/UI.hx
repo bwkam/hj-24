@@ -2,10 +2,13 @@ package displays;
 
 import lime.graphics.Image;
 import lime.ui.Window;
+import peote.text.Font;
 import peote.ui.PeoteUIDisplay;
 import peote.ui.interactive.Interactive;
 import peote.ui.interactive.UIElement;
+import peote.ui.interactive.UITextLine;
 import peote.ui.style.RoundBorderStyle;
+import peote.ui.style.interfaces.FontStyle;
 import peote.ui.style.interfaces.StyleID;
 import peote.view.Buffer;
 import peote.view.Color;
@@ -18,29 +21,62 @@ import peote.view.text.TextProgram;
 import sprites.Fish;
 import utils.Loader;
 
+using tweenxcore.Tools;
+
+@packed // this is need for ttfcompile fonts (gl3font)
+@globalLineSpace // all pageLines using the same page.lineSpace (gap to next line into page)
+@:structInit
+class MyFontStyle implements FontStyle
+{
+	public var color:Color = Color.GREEN;
+	//public var color:Color = Color.GREEN.setAlpha(0.5);
+	public var width:Float = 80; // (<- is it still fixed to get from font-defaults if this is MISSING ?)
+	public var height:Float = 80;
+	@global public var weight = 0.5; //0.49 <- more thick (only for ttfcompiled fonts)
+}
+
 class UI extends PeoteUIDisplay {
     var scoreScale:Int = 30;
     var text:Text;
     var textProgram:TextProgram;
 	var frameSize = 64.0;
 	var fishProgram:Program;
-	var isReady:Bool = false;
 	var fishBuffer:Buffer<FishIcon>;
 	var icons:Array<FishIcon> = [];
 	var fish:FishIcon;
 	var window:Window;
 	var maxHealthWidth:Int = 500;
 	var healthBar:UIElement;
+	public var isReady:Bool = false;
 	var roundBorderStyle:RoundBorderStyle;
+	var finishedSliding:Bool = false;
+	var curTitle:UITextLine<MyFontStyle>;
+	public var startTime:Float = 0.0; 
+	public var endTime:Float = 0.0;
+	public var font:Font<MyFontStyle>;
+	public var fs:MyFontStyle;
+
+	public static var TOTAL_FRAME:Int = 180;
 
     override public function new(window:Window, x:Int, y:Int, width:Int, height:Int, color:Color=0x00000000, maxTouchpoints:Int = 3, availableStyles:Array<StyleID> = null, autoAddStyles:Null<Bool> = null) {
         super(x, y, width, height, color, maxTouchpoints, availableStyles, autoAddStyles);
 		this.window = window;
 
+		new Font<MyFontStyle>("assets/fonts/config.json").load(onReady);
+    }
+
+	public function onReady(_font:Font<MyFontStyle>) {
+		isReady = true;
+		font = _font;
+		fs = new MyFontStyle();
+		// var bs = new BoxStyle
+
+
 		fishBuffer = new Buffer<FishIcon>(1, 1, true);
 
 		fishProgram = new Program(fishBuffer);
 		fishProgram.blendEnabled = true;
+
 
 		Loader.image("assets/spritesheet.png", true, function(image:Image) {
 			var texture = new Texture(image.width, image.height);
@@ -83,7 +119,7 @@ class UI extends PeoteUIDisplay {
 
         this.addProgram(textProgram);
 		this.addProgram(fishProgram);
-    }
+	}
 
 	public function updateScore(x:Int, f:Fish) {
 		var icon = new FishIcon();
@@ -102,20 +138,55 @@ class UI extends PeoteUIDisplay {
         textProgram.update(text, true);
 	}
 
-	public function updateHealth(x:Int) {
-		trace(x);
-		var newStyle = roundBorderStyle.copy();
-
-		if (x < 70) {
-			newStyle.color = Color.ORANGE;
-		} else if (x < 20) {
-			newStyle.color = Color.RED;
+	public function newLevel(name:String) {
+		if (isReady) {
+			// curTitle = new Text(0, Std.int((this.height - 100) / 2), name, {letterWidth: 100, letterHeight: 100});
+			curTitle = font.createUITextLine(0, Std.int(this.height / 2), this.width, this.height, name, fs);
+			this.add(curTitle);
 		}
 
-		healthBar.style = newStyle; 
-		healthBar.width = Std.int((x/100) * maxHealthWidth);
-		healthBar.update();
-		healthBar.updateStyle();
+	}
+
+	public function updateTitle(time:Float) {
+		var rate:Float = 0;
+		
+		if (curTitle != null && endTime != 0 && time >= endTime) {
+			// uiDisplay.remove
+			// this.remo
+			curTitle = null;
+		}
+
+		else if (curTitle != null && curTitle.x <= (this.width/2)) {
+			trace("lerping");
+			var scale = curTitle.width;
+			if (time > startTime && time < endTime ) {
+				rate = (time-startTime) / (endTime);
+				trace(rate);
+				curTitle.x = Math.round(rate.cubicOut().lerp(-scale, ((this.width/2)+30)));
+				curTitle.y = Std.int(this.height / 2);
+			}
+			curTitle.update();
+			curTitle.updateStyle();
+		}
+	}
+
+	public function updateHealth(x:Float) {
+		if (isReady) {
+			var newStyle = roundBorderStyle.copy();
+	
+			if (x < 20) {
+				newStyle.color = Color.RED;
+			} else if (x < 70) {
+				newStyle.color = Color.ORANGE;
+			} else {
+				newStyle.color = Color.GREEN;
+			}
+	
+			healthBar.style = newStyle; 
+			healthBar.width = Std.int((x/100) * maxHealthWidth);
+			healthBar.update();
+			healthBar.updateStyle();
+		}
 	}
 
 	public function updateIcon() {
@@ -153,4 +224,5 @@ class FishIcon implements Element {
 		buffer.update();
 	}
 }
+
 

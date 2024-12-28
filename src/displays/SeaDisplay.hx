@@ -23,6 +23,7 @@ using Lambda;
 typedef SeaMembers = {
 	sea:Sea,
 	fishes: Fishes,
+	waves:Waves,
 }
 
 class SeaDisplay extends Display {
@@ -173,6 +174,7 @@ class SeaDisplay extends Display {
 		this.members = {
 			sea: sea,
 			fishes: fishes, 
+			waves: waves,
 		}
     }
 

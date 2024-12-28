@@ -72,5 +72,8 @@ class Math {
 
 		return {r: r, g: g, b: b};
 	}
-	
+
+	public static function deltaDx(vi:Float, t:Float, acc:Float) {
+		return (-vi * (t / 2)) + (0.5 * acc * std.Math.pow(t / 2, 2));
+	}
 }

@@ -51,7 +51,7 @@
             "fishThreshold": 20,
             "bg": "backgroundColorGrass.png",
             "newFish": {
-                "tile": 3,
+                "tile": 79,
                 "level": 4,
                 "gain": 5,
                 "damage": 20,
@@ -76,12 +76,12 @@
             "playerLevel": 4
         },
         {
-            "score": 750,
+            "score": 800,
             "speed": 500,
             "fishThreshold": 20,
             "bg": "colored_forest.png",
             "newFish": {
-                "tile": 87,
+                "tile": 92,
                 "level": 6,
                 "gain": 12,
                 "damage": 30,
@@ -91,12 +91,12 @@
             "playerLevel": 5
         },
         {
-            "score": 1000,
+            "score": 1500,
             "speed": 600,
             "fishThreshold": 20,
             "bg": "colored_castle.png",
             "newFish": {
-                "tile": 6,
+                "tile": 101,
                 "level": 7,
                 "gain": 20,
                 "damage": 35,
