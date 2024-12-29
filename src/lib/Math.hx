@@ -82,5 +82,14 @@ class Math {
 	inline public static function radiansToDegrees(radians:Float):Float {
 		return radians * (180 / std.Math.PI);
 	}
+
+	inline public static function getTileLocation(index:Int, width:Int) {
+		var row = std.Math.floor(index / width);
+		var column = index % width;
+		return {
+			row: row,
+			column: column,
+		};
+	}
 	
 }

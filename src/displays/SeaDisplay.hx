@@ -379,8 +379,7 @@ class SeaDisplay extends Display {
 			if (f.follow) {
 				switch (f.state) {
 					case IDLE:
-						if (d < triggerDistance && !player.onPlatform) {
-							// trace("PLAYER ON PLATOFMR: " + player.onPlatform);
+						if (d < triggerDistance) {
 							f.state = AGGRESSIVE;
 						}
 					case AGGRESSIVE:
@@ -475,89 +474,6 @@ class Background implements Element {
 	@texPosX @varying @formula("uTime * -20.0") public var txOffset:Int;
 
     var OPTIONS = { texRepeatX: true, texRepeatY: true, blend: true };
-}
-
-class PlatformClass implements Element {
-	@posX @varying @set("Position") public var x:Float = 0.0;
-	@posY @varying @set("Position") public var y:Float = 0.0;
-
-	@sizeX public var w:Float = 0.0;
-	@sizeY public var h:Float;
-
-	@color public var color:Color = 0x000000ff;
-
-	@pivotX @const @formula("w * 0.5") public var pivotX:Float = 0.0;
-	@pivotY @const @formula("h * 0.5") public var pivotY:Float = 0.0;
-
-	public function init() {
-		var tileScale = 30;
-
-		var platform:Platform = {tiles: [], x: 0, y: 0, body: null};
-
-		var dirt = tileNum; 
-		var l = tileNum + 1;
-		var m = tileNum + 2;
-		var r = tileNum + 3;
-
-		for (yTile in 0...h) {
-			for (xTile in 0...w) {
-				var tileN = 0;
-
-				var tile = new Sprite(islandsBuffer, world, Color.WHITE, {
-					x: (xTile*tileScale)+x,
-					y: (yTile*tileScale)+y,
-					kinematic: true,
-					velocity_x: -50,
-					mass: 10,
-					shape: {
-						type: RECT,
-						width: tileScale,
-						height: tileScale,
-					},
-				});
-
-				if (xTile == 0 && yTile == 0) tileN = l; 
-				else if (xTile == w - 1 && yTile == 0) tileN = r;
-				else if (xTile < w - 1 && yTile == 0) tileN = m;
-				else if (yTile > 0) tileN = dirt; 
-
-				tile.tile = tileN;
-
-				platform.tiles.push(tile);
-				platforms.bodies.push(tile.body);
-			}
-		}
-
-		platform.x = platform.tiles[0].x;
-		platform.y = platform.tiles[0].y;
-		platform.body = platform.tiles[0].body;
-
-
-		platforms.platforms.push(platform);
-
-		if (withCoin) {
-			var randomTile = platform.tiles[Std.random(w)];
-			var coin = new Sprite(islandsBuffer, world, Color.YELLOW, {
-				x: randomTile.body.x, 
-				y: randomTile.body.y - 80, 
-				kinematic: true,
-				velocity_x: randomTile.body.velocity.x, 
-				mass: 10,
-				shape: {
-					type: CIRCLE, 
-					width: 50, 
-					height: 50
-				}
-			});
-
-			coin.tile = 14;
-
-			coins.sprts.push(coin);
-			coins.bodies.push(coin.body);
-		}
-
-		return platform;
-	}
 }
 
 

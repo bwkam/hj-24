@@ -15,6 +15,8 @@ class Sprite implements Element {
 	@sizeX public var w(default, set):Float = 0.0;
 	@sizeY public var h:Float;
 
+	public var withBody:Bool = true;
+
 	@color public var color:Color = 0x000000ff;
 
 	@pivotX @const @formula("w * 0.5") public var pivotX:Float = 0.0;
@@ -30,12 +32,13 @@ class Sprite implements Element {
 	public var body:Body;
 	public var buffer:Buffer<Sprite>;
 
-	public function new(buffer:Buffer<Sprite>, world:World, c:Color, _options:BodyOptions) {
+	public function new(buffer:Buffer<Sprite>, world:World, c:Color, _options:BodyOptions, ?withBody:Bool = true) {
 		var options = _options;
 
 		this.h = options.shape.height;
 		this.w = options.shape.width;
 		this.color = c;
+		this.withBody = withBody;
 
 		this.buffer = buffer;
 
@@ -45,20 +48,24 @@ class Sprite implements Element {
 		this.x = options.x;
 		this.y = options.y;
 
-		body = world.make(options);
-		body.on_move = onMove.bind(buffer, _);
+		if (withBody) {
+			body = world.make(options);
+			body.on_move = onMove.bind(buffer, _);
+		}
 
 		buffer.addElement(this);
 	}
 
 	function set_w(new_w) {
-		if (this.body != null) this.body.scale_x = -new_w;
+		if (this.body != null && this.withBody)
+			this.body.scale_x = -new_w;
 		return this.w = new_w;
 	}
 
 	public function kill() {
 		this.buffer.removeElement(this);
-		this.body.remove();
+		if (this.withBody) 
+			this.body.remove();
 	}
 
 	public function onMove(buffer:Buffer<Sprite>, x:Float, y:Float) {

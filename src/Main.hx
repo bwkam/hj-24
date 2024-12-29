@@ -300,10 +300,10 @@ class Main extends Application {
 			separate: true,
 		});
 
-		world.listen(fishes.bodies, platforms.bodies, {
-			separate: true,
-			// enter: (_, _, _) ->,
-		});
+		// world.listen(fishes.bodies, platforms.bodies, {
+		// 	separate: true,
+		// 	// enter: (_, _, _) ->,
+		// });
 	}
 
 	function initEcho() {
@@ -325,7 +325,7 @@ class Main extends Application {
 			uiDisplay.updateTitle();
 
 			trace(player.onPlatform);
-			
+
 			if (player.inAir) {
 				if (player.health < 100)
 					player.health += 0.1;
