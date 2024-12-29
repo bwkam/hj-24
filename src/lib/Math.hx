@@ -76,4 +76,7 @@ class Math {
 	public static function deltaDx(vi:Float, t:Float, acc:Float) {
 		return (-vi * (t / 2)) + (0.5 * acc * std.Math.pow(t / 2, 2));
 	}
+	inline public static function randomRange(min:Int, max:Int):Int {
+		return min + Std.random(max - min);
+	}
 }

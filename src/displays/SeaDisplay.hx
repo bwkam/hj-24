@@ -15,6 +15,7 @@ import peote.view.Element;
 import peote.view.Program;
 import peote.view.Program;
 import peote.view.Texture;
+import sprites.Player;
 import sprites.Sea;
 import sprites.Waves;
 import utils.Loader;
@@ -24,6 +25,21 @@ typedef SeaMembers = {
 	sea:Sea,
 	fishes: Fishes,
 	waves:Waves,
+	platforms:Platforms,
+	coins:{sprts: Array<Sprite>, bodies: Array<Body>},
+}
+
+
+typedef Platform = {
+	tiles: Array<Sprite>, 
+	x: Float, 
+	y: Float,
+	body: Body,
+}
+
+typedef Platforms = {
+	platforms: Array<Platform>,
+	bodies: Array<Body>,
 }
 
 class SeaDisplay extends Display {
@@ -39,14 +55,26 @@ class SeaDisplay extends Display {
 	public var isReady:Bool = false;
 	public var wavesBuffer:Buffer<Waves>;
 	public var bg(default, set):String = "";
+	public var islandsBuffer:Buffer<Sprite>;
+	public var islandsProgram:Program;
+	public var tileNum = 0;
+	public var coins:{sprts: Array<Sprite>, bodies: Array<Body>} = {sprts: [], bodies: []};
 	var bgElem:Background;
-	
+	var platformSpawnChance:Float = 0.1;
+	var lastPlatform:Platform;
+	var platformSpacing:Int = 50;
+	var platforms:Platforms = {platforms: [], bodies: []};
+	var world:World;
 
 	var seaBuffer:Buffer<Sea>;
 
     override public function new(x:Int, y:Int, width:Int, height:Int, world:World, color:Color = 0x00000000) {
 		super(x, y, width, height, color);
 		var frameSize = 64;
+
+		this.world = world;
+
+		trace("MAX WIDTH " + width);
 
 		this.buffer = new Buffer<Sprite>(1, 10, true);
         this.program = new Program(this.buffer);
@@ -60,6 +88,9 @@ class SeaDisplay extends Display {
 
 		bgBuffer = new Buffer<Background>(1, 1, true);
 		bgProgram = new Program(bgBuffer);
+
+		islandsBuffer = new Buffer<Sprite>(1, 5, true);
+		islandsProgram = new Program(islandsBuffer);
 
 
 		bgProgram.injectIntoVertexShader(" ", true);
@@ -79,7 +110,7 @@ class SeaDisplay extends Display {
 
 		var waves = new Waves(wavesBuffer, world, Color.WHITE, {
 			x: 0,
-			y: world.height - 340,
+			y: world.height - 315,
 			mass: 0,
 			kinematic: true,
 			shape: {
@@ -110,6 +141,20 @@ class SeaDisplay extends Display {
 			wavesProgram.snapToPixel(1);
 
 		});
+
+		Loader.image("assets/platform.png", true, function(image:Image) {
+			var texture = new Texture(image.width, image.height);
+			texture.tilesX = Std.int(image.width / frameSize);
+			texture.tilesY = Std.int(image.height / frameSize);
+			// texture.smoothExpand = true;
+			// texture.smoothShrink = true;
+			texture.setData(image);
+
+			islandsProgram.addTexture(texture, "custom");
+			islandsProgram.snapToPixel(1);
+			islandsProgram.blendEnabled = true;
+		});
+
 
 		// bgProgram.injectIntoFragmentShader("
 		// 	float normpdf(in float x, in float sigma) { return 0.39894*exp(-0.5*x*x/(sigma*sigma))/sigma; }
@@ -164,8 +209,12 @@ class SeaDisplay extends Display {
 		bgElem.color = Color.WHITE;
 
 		bgBuffer.addElement(bgElem);
+
+
+		// islandsProgram.injectIntoVertexShader(" ", true);
 		
 		this.addProgram(this.bgProgram);
+		this.addProgram(this.islandsProgram);
 		this.addProgram(seaProgram);
         this.addProgram(this.program);
 		this.addProgram(this.wavesProgram);
@@ -175,8 +224,80 @@ class SeaDisplay extends Display {
 			sea: sea,
 			fishes: fishes, 
 			waves: waves,
+			platforms: platforms,
+			coins: coins,
 		}
     }
+
+	public function createPlatform(x:Float, y:Float, w:Int, h:Int, withCoin:Bool):Platform {
+		var tileScale = 30;
+
+		var platform:Platform = {tiles: [], x: 0, y: 0, body: null};
+
+		var dirt = tileNum; 
+		var l = tileNum + 1;
+		var m = tileNum + 2;
+		var r = tileNum + 3;
+
+		for (yTile in 0...h) {
+			for (xTile in 0...w) {
+				var tileN = 0;
+
+				var tile = new Sprite(islandsBuffer, world, Color.WHITE, {
+					x: (xTile*tileScale)+x,
+					y: (yTile*tileScale)+y,
+					kinematic: true,
+					velocity_x: -50,
+					mass: 10,
+					shape: {
+						type: RECT,
+						width: tileScale,
+						height: tileScale,
+					},
+				});
+
+				if (xTile == 0 && yTile == 0) tileN = l; 
+				else if (xTile == w - 1 && yTile == 0) tileN = r;
+				else if (xTile < w - 1 && yTile == 0) tileN = m;
+				else if (yTile > 0) tileN = dirt; 
+
+				tile.tile = tileN;
+
+				platform.tiles.push(tile);
+				platforms.bodies.push(tile.body);
+			}
+		}
+
+		platform.x = platform.tiles[0].x;
+		platform.y = platform.tiles[0].y;
+		platform.body = platform.tiles[0].body;
+
+
+		platforms.platforms.push(platform);
+
+		if (withCoin) {
+			var randomTile = platform.tiles[Std.random(w)];
+			var coin = new Sprite(islandsBuffer, world, Color.YELLOW, {
+				x: randomTile.body.x, 
+				y: randomTile.body.y - 80, 
+				kinematic: true,
+				velocity_x: randomTile.body.velocity.x, 
+				mass: 10,
+				shape: {
+					type: CIRCLE, 
+					width: 50, 
+					height: 50
+				}
+			});
+
+			coin.tile = 14;
+
+			coins.sprts.push(coin);
+			coins.bodies.push(coin.body);
+		}
+
+		return platform;
+	}
 
 	public function set_bg(newBg:String) {
 
@@ -217,7 +338,7 @@ class SeaDisplay extends Display {
 			var fishData = curData[i];
 
 			this.members.fishes.repeat({
-				c: 0x00000000,
+				c: Color.WHITE,
 				w: 50,
 				h: 50,
 				x: () -> (Std.random(Std.int(width / 2)) + width / 2) - 50,
@@ -233,9 +354,39 @@ class SeaDisplay extends Display {
 		}
 	}
 
-	public function update() {
+	public function update(player:Player, world:World) {
 		var fishes = this.members.fishes;
-		// if (fishes.fishes.length > 0) redistribute();
+		if (player.x - (lastPlatform?.body.x ?? -platformSpacing) >= platformSpacing) {
+			if (std.Math.random() < platformSpacing) {
+				var num = Std.random(3) + 1;
+				var platform:Platform = null;
+				var xpos = Std.random(Std.int(this.width / 2)) + this.width / 2;
+				var lucks = [for (i in 0...num) Std.random(2) == 1];
+
+
+				for (i in 0...num) {
+					platform = createPlatform(xpos, Std.int(this.height / 2) - 100, 5, 3, lucks[i]);
+					
+					platforms.platforms.push(platform);
+
+					xpos += lib.Math.randomRange(150, 200);
+				}
+				
+
+				lastPlatform = platform;
+
+				// trace("PLAYER X: " + player.x);
+				// trace("LAST X: " + lastPlatform.body.x);
+			} else {
+				lastPlatform = {y: 0, x: 0, tiles: [], body: world.make({x: player.x + platformSpacing, velocity_x: -50, kinematic: true, mass: 2})};
+			}
+		}
+
+		var idx = 0;
+		// for (i in platforms.platforms) {
+		// 	trace('ISLAND ${idx}: ' + i.body.x);
+		// 	idx++;
+		// }
 
 		for (f in fishes.fishes) {
 			f.update();
@@ -245,7 +396,6 @@ class SeaDisplay extends Display {
 				f.kill();
 			}
 			if (f.x < (this.width / 2) * 0.1 && f.check) {
-				trace("should more");
 				fishes.fishes.filter(f -> f.check).iter(f -> f.check = false);
 				redistribute();
 			}
@@ -274,5 +424,7 @@ class Background implements Element {
     @texSizeX @const @formula("1024.0/(w/512.0)") public var twOffset:Int;
 	@texPosX @varying @formula("uTime * -20.0") public var txOffset:Int;
 
-    var OPTIONS = { texRepeatX:true, texRepeatY:true, blend:true };
+    var OPTIONS = { texRepeatX: true, texRepeatY: true, blend: true };
 }
+
+

@@ -37,6 +37,8 @@ class Sprite implements Element {
 		this.w = options.shape.width;
 		this.color = c;
 
+		this.buffer = buffer;
+
 		options.x = _options.x + (this.w * 0.5);
 		options.y = _options.y + (this.h * 0.5);
 

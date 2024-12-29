@@ -5,6 +5,7 @@
             "speed": 100,
             "fishThreshold": 10,
             "bg": "backgroundEmpty.png",
+            "tile": 0,
             "newFish": {
                 "tile": 73,
                 "level": 1,
@@ -16,9 +17,10 @@
             "playerLevel": 1
         },
         {
-            "score": 5,
-            "speed": 150,
+            "score": 200,
+            "speed": 100,
             "fishThreshold": 10,
+            "tile": 0,
             "bg": "backgroundColorForest.png",
             "newFish": {
                 "tile": 75,
@@ -31,9 +33,10 @@
             "playerLevel": 1
         },
         {
-            "score": 150,
-            "speed": 200,
-            "fishThreshold": 20,
+            "score": 500, 
+            "speed": 100,
+            "tile": 66,
+            "fishThreshold": 10,
             "bg": "backgroundColorDesert.png",
             "newFish": {
                 "tile": 77,
@@ -46,9 +49,10 @@
             "playerLevel": 2
         },
         {
-            "score": 300,
-            "speed": 300,
-            "fishThreshold": 20,
+            "score": 700,
+            "speed": 100,
+            "tile": 66,
+            "fishThreshold": 10,
             "bg": "backgroundColorGrass.png",
             "newFish": {
                 "tile": 79,
@@ -61,9 +65,10 @@
             "playerLevel": 3
         },
         {
-            "score": 500,
-            "speed": 400,
-            "fishThreshold": 20,
+            "score": 900,
+            "speed": 100,
+            "fishThreshold": 10,
+            "tile": 132,
             "bg": "backgroundColorFall.png",
             "newFish": {
                 "tile": 81,
@@ -76,9 +81,10 @@
             "playerLevel": 4
         },
         {
-            "score": 800,
-            "speed": 500,
-            "fishThreshold": 20,
+            "score": 1500,
+            "speed": 100,
+            "fishThreshold": 10,
+            "tile": 132,
             "bg": "colored_forest.png",
             "newFish": {
                 "tile": 92,
@@ -91,9 +97,10 @@
             "playerLevel": 5
         },
         {
-            "score": 1500,
-            "speed": 600,
-            "fishThreshold": 20,
+            "score": 2000,
+            "speed": 100,
+            "tile": 198,
+            "fishThreshold": 10,
             "bg": "colored_castle.png",
             "newFish": {
                 "tile": 101,

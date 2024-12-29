@@ -13,6 +13,8 @@ class Player extends Sprite {
 	public var isMovingUp:Bool = false;
 	public var isMovingDown:Bool = false;
 	public var isMoving:Bool = false;
+	public var vyi:Float = 300;
+	public var vxi:Float = 50;
 	public var vy:Float = 0.0;
 	public var vx:Float = 0.0;
 	public var acc:Float = 0.0;
@@ -20,6 +22,7 @@ class Player extends Sprite {
 	public var level:Int = 2;
 	public var score:Int = 0;
 	public var health:Float = 100; 
+	public var gold:Int = 0;
 	public var boost:Int = 0; 
 	public var inAir:Bool = false;
 	public var reachedMax:Bool = false;
@@ -27,6 +30,7 @@ class Player extends Sprite {
 	public var last_y:Float = 0.0;
 	public var last_vx:Float = 0.0;
 	public var last_vy:Float = 0.0;
+	public var onPlatform:Bool = false;
 
 	var timeStopped:Float = 0.0;
 
@@ -40,12 +44,16 @@ class Player extends Sprite {
 
 
 	public function onKeyDown(keyCode:KeyCode, modifier:KeyModifier, y:Float) {
-		if ((keyCode == KeyCode.W || keyCode == KeyCode.UP) && !reachedMax) {
-			this.angle = -angleOffset;
-			this.body.velocity.y = -vy;
-			this.body.velocity.x = vx;
-			isMoving = true;
-			isMovingUp = true;
+		trace(reachedMax);
+		if ((keyCode == KeyCode.W || keyCode == KeyCode.UP)) {
+			if (!reachedMax || onPlatform) {
+				this.angle = -angleOffset;
+				this.body.velocity.y = -vy;
+				this.body.velocity.x = vx;
+				isMoving = true;
+				isMovingUp = true;
+			} else
+				return;
 
 		} else if (keyCode == KeyCode.S || keyCode == KeyCode.DOWN) {
 			this.angle = angleOffset;
@@ -53,7 +61,9 @@ class Player extends Sprite {
 			this.body.velocity.x = vx;
 			isMoving = true;
 			isMovingDown = true;
-		}
+		} else if (keyCode == KeyCode.SPACE && this.last_y <= y) {
+			this.body.velocity.y = -vy;
+		} 
 
 		if (keyCode == KeyCode.D || keyCode == KeyCode.RIGHT) {
 			this.body.velocity.x = vx;
@@ -92,6 +102,7 @@ class Player extends Sprite {
 	}
 	public function update() {
 		if (!isMoving && (Timer.stamp() - timeStopped) < 2 && !inAir) {
+			// trace("setting to 0")
 			this.body.velocity.x = lib.Math.lerp(this.body.velocity.x, 0, 1);
 			this.body.x = lib.Math.lerp(this.body.x, 20, 0.05);
 		}

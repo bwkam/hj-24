@@ -33,7 +33,7 @@ class PlayerDisplay extends Display {
 			},
 		});
 
-		player.vy = 100;
+		player.vy = 300;
 		player.vx = 50;
 		player.level = 2;
 

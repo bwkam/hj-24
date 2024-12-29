@@ -28,11 +28,12 @@ class Fish extends Sprite {
 		this.tileNumber = config.tile;
 		this.gain = config.gain;
 		this.tile = config.tile;
-		this.color = Color.WHITE;
+		this.color = color;
 		this.damage = config.damage;
 		this.w = this.w * -1;
-		if (secret != null)
+		if (secret != null) {
 			isSecret = secret;
+		}
 	}
 
 	public function update() {

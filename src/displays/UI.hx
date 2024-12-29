@@ -138,10 +138,17 @@ class UI extends PeoteUIDisplay {
         textProgram.update(text, true);
 	}
 
+	public function updateScoreOnly(x:Int) {
+		text.text = '${x}';
+		text.x = this.width - (text.text.length * text.letterWidth) - 40 - 10;
+
+		textProgram.update(text, true);
+	}
+
 	public function newLevel(name:String) {
 		if (isReady) {
 			// curTitle = new Text(0, Std.int((this.height - 100) / 2), name, {letterWidth: 100, letterHeight: 100});
-			curTitle = font.createUITextLine(0, Std.int(this.height / 2), this.width, this.height, name, fs);
+			curTitle = font.createUITextLine(0, Std.int(this.height / 2), Std.int(this.width / 2), Std.int(this.height / 2), name, fs);
 			this.add(curTitle);
 		}
 
@@ -152,17 +159,17 @@ class UI extends PeoteUIDisplay {
 		
 		if (curTitle != null && endTime != 0 && time >= endTime) {
 			// uiDisplay.remove
-			// this.remo
+			this.remove(curTitle);
 			curTitle = null;
 		}
 
 		else if (curTitle != null && curTitle.x <= (this.width/2)) {
-			trace("lerping");
+			// trace("lerping");
 			var scale = curTitle.width;
 			if (time > startTime && time < endTime ) {
 				rate = (time-startTime) / (endTime);
-				trace(rate);
-				curTitle.x = Math.round(rate.cubicOut().lerp(-scale, ((this.width/2)+30)));
+				// trace(rate);
+				curTitle.x = Math.round(rate.cubicOut().lerp(-scale, ((this.width / 2) + 50)));
 				curTitle.y = Std.int(this.height / 2);
 			}
 			curTitle.update();
