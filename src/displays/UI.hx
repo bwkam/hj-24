@@ -13,6 +13,7 @@ import peote.ui.style.interfaces.StyleID;
 import peote.view.Buffer;
 import peote.view.Color;
 import peote.view.Element;
+import peote.view.PeoteView;
 import peote.view.Program;
 import peote.view.Texture;
 import peote.view.element.Elem;
@@ -51,12 +52,20 @@ class UI extends PeoteUIDisplay {
 	var roundBorderStyle:RoundBorderStyle;
 	var finishedSliding:Bool = false;
 	var curTitle:UITextLine<MyFontStyle>;
-	public var startTime:Float = 0.0; 
+	public var startTime(default, set):Float = 0.0; 
 	public var endTime:Float = 0.0;
 	public var font:Font<MyFontStyle>;
 	public var fs:MyFontStyle;
+	public var curTime:Float;
+
+	public var rate:Float = 0.0;
 
 	public static var TOTAL_FRAME:Int = 180;
+
+	function set_startTime(newTime:Float) {
+		this.endTime = newTime + 5;
+		return this.startTime = newTime;
+	}
 
     override public function new(window:Window, x:Int, y:Int, width:Int, height:Int, color:Color=0x00000000, maxTouchpoints:Int = 3, availableStyles:Array<StyleID> = null, autoAddStyles:Null<Bool> = null) {
         super(x, y, width, height, color, maxTouchpoints, availableStyles, autoAddStyles);
@@ -148,33 +157,32 @@ class UI extends PeoteUIDisplay {
 	public function newLevel(name:String) {
 		if (isReady) {
 			// curTitle = new Text(0, Std.int((this.height - 100) / 2), name, {letterWidth: 100, letterHeight: 100});
-			curTitle = font.createUITextLine(0, Std.int(this.height / 2), Std.int(this.width / 2), Std.int(this.height / 2), name, fs);
+			curTitle = font.createUITextLine(0, Std.int(this.height / 2), 800, 200, name, fs);
 			this.add(curTitle);
 		}
 
 	}
 
-	public function updateTitle(time:Float) {
-		var rate:Float = 0;
-		
-		if (curTitle != null && endTime != 0 && time >= endTime) {
-			// uiDisplay.remove
-			this.remove(curTitle);
-			curTitle = null;
-		}
-
-		else if (curTitle != null && curTitle.x <= (this.width/2)) {
-			// trace("lerping");
-			var scale = curTitle.width;
-			if (time > startTime && time < endTime ) {
-				rate = (time-startTime) / (endTime);
-				// trace(rate);
-				curTitle.x = Math.round(rate.cubicOut().lerp(-scale, ((this.width / 2) + 50)));
-				curTitle.y = Std.int(this.height / 2);
+	public function updateTitle() {
+		if (isReady) {
+			if (curTitle != null && peoteView.time >= endTime) {
+				this.remove(curTitle);
+				rate = 0;
+				curTitle = null;
 			}
-			curTitle.update();
-			curTitle.updateStyle();
+	
+			else if (curTitle != null && curTitle.x <= (this.width/2)) {
+				// trace("lerping");
+				if (peoteView.time > startTime && peoteView.time < endTime) {
+					rate = (peoteView.time - startTime) / (endTime - startTime);
+					// trace(rate);
+					curTitle.x = Math.round(rate.quartOut().lerp(0, ((800))));
+					curTitle.y = Std.int(this.height / 2);
+				}
+				curTitle.update();
+			}
 		}
+		
 	}
 
 	public function updateHealth(x:Float) {

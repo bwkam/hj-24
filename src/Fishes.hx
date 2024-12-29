@@ -70,6 +70,6 @@ class Fishes {
 			_opts = opts;
 			addFish(settings.c, config, opts);
 		}
-		addFish(0x00000000, config, _opts, true);
+		// addFish(Color.RED, config, _opts, true);
 	}
 }

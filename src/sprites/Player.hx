@@ -44,7 +44,6 @@ class Player extends Sprite {
 
 
 	public function onKeyDown(keyCode:KeyCode, modifier:KeyModifier, y:Float) {
-		trace(reachedMax);
 		if ((keyCode == KeyCode.W || keyCode == KeyCode.UP)) {
 			if (!reachedMax || onPlatform) {
 				this.angle = -angleOffset;
@@ -61,8 +60,6 @@ class Player extends Sprite {
 			this.body.velocity.x = vx;
 			isMoving = true;
 			isMovingDown = true;
-		} else if (keyCode == KeyCode.SPACE && this.last_y <= y) {
-			this.body.velocity.y = -vy;
 		} 
 
 		if (keyCode == KeyCode.D || keyCode == KeyCode.RIGHT) {

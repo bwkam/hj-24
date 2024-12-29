@@ -79,4 +79,8 @@ class Math {
 	inline public static function randomRange(min:Int, max:Int):Int {
 		return min + Std.random(max - min);
 	}
+	inline public static function radiansToDegrees(radians:Float):Float {
+		return radians * (180 / std.Math.PI);
+	}
+	
 }

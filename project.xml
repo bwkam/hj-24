@@ -48,7 +48,7 @@
 
 
 	<haxeflag name="-dce" value="full" />
-	<haxeflag name="--connect" value="6000" />
+	<!-- <haxeflag name="--connect" value="6000" /> -->
 	
 	<!-- <haxedef name="webgl-debug" /> --> <!-- try with chrome and look here: https://www.khronos.org/webgl/wiki/Debugging -->
 	<!-- <haxedef name="source-map-content" /> --> <!-- to debug with chrome id needs also "-debug" -->

@@ -40,7 +40,7 @@ typedef Data = {
 	fishThreshold:Int,
 	bg:String,
 	newFish:{
-		tile:Int, level:Int, gain:Int, distribution:Map<Int, Int>, color:String, damage:Int,
+		tile:Int, level:Int, gain:Int, distribution:Map<Int, Int>, color:String, damage:Int, follow:Bool,
 	},
 	tile:Int,
 	playerTex:String,
@@ -110,7 +110,7 @@ class Main extends Application {
 		playerDisplay.zoom = zoom;
 		seaDisplay.zoom = zoom;
 
-		var maxbound = new Sprite(seaDisplay.buffer, world, Color.BLACK, {
+		var maxbound = new Sprite(seaDisplay.buffer, world, 0x00000000, {
 			x: 0,
 			y: 180,
 			kinematic: true,
@@ -122,7 +122,7 @@ class Main extends Application {
 			}
 		});
 
-		var uppermaxbound = new Sprite(seaDisplay.buffer, world, Color.BLACK, {
+		var uppermaxbound = new Sprite(seaDisplay.buffer, world, 0x00000000, {
 			x: 0,
 			y: 100,
 			kinematic: true,
@@ -272,7 +272,6 @@ class Main extends Application {
 				return player.last_y >= shoreLine;
 			},
 			enter: (a, b, c) -> {
-				trace("REACHED MAX");
 				player.body.acceleration.y = 900;
 				player.reachedMax = true;
 			},
@@ -284,7 +283,6 @@ class Main extends Application {
 				return player.last_y <= shoreLine;
 			},
 			enter: (a, b, c) -> {
-				trace("REACHED MAX");
 				player.body.acceleration.y = 900;
 				player.reachedMax = true;
 			},
@@ -302,7 +300,10 @@ class Main extends Application {
 			separate: true,
 		});
 
-		
+		world.listen(fishes.bodies, platforms.bodies, {
+			separate: true,
+			// enter: (_, _, _) ->,
+		});
 	}
 
 	function initEcho() {
@@ -318,17 +319,19 @@ class Main extends Application {
 	override function update(dt:Float) {
 		if (loaded) {
 			world.step(dt / 1000);
-			seaDisplay.update(player, world);
+			seaDisplay.update(player, world, dt);
 			playerDisplay.update();
 			uiDisplay.updateIcon();
-			uiDisplay.updateTitle(peoteView.time);
+			uiDisplay.updateTitle();
 
+			trace(player.onPlatform);
+			
 			if (player.inAir) {
 				if (player.health < 100)
 					player.health += 0.1;
 				uiDisplay.updateHealth(player.health);
 			} else {
-				player.health -= 0.1;
+				// player.health -= 0.1;
 				player.reachedMax = false;
 				uiDisplay.updateHealth(player.health);
 			}
@@ -343,9 +346,10 @@ class Main extends Application {
 			for (d in data) {
 				if (player.score >= d.score) {
 					seaDisplay.bg = d.bg;
-					uiDisplay.newLevel("LEVEL 1");
+					uiDisplay.newLevel('LEVEL ${i + (data2.length - data.length) + 1}');
+					uiDisplay.rate = 0;
 					uiDisplay.startTime = peoteView.time;
-					uiDisplay.endTime = uiDisplay.startTime + 5;
+
 					fishes.speed = d.speed;
 					seaDisplay.fishThreshold = d.fishThreshold;
 					seaDisplay.tileNum = d.tile;
@@ -355,6 +359,7 @@ class Main extends Application {
 						level: d.newFish.level,
 						gain: d.newFish.gain,
 						damage: d.newFish.damage,
+						follow: d.newFish.follow,
 					});
 					seaDisplay.curData = data2.slice(0, i + 1 + (data2.length - data.length));
 					seaDisplay.redistribute();

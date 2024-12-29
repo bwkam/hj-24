@@ -65,6 +65,11 @@ class SeaDisplay extends Display {
 	var platformSpacing:Int = 50;
 	var platforms:Platforms = {platforms: [], bodies: []};
 	var world:World;
+	public var triggerDistance = 200;
+	public var escapeTimer:Float = 0;
+	public var escapeDistance = 60;
+	public var escapeDuration = 1.5;
+
 
 	var seaBuffer:Buffer<Sea>;
 
@@ -73,8 +78,6 @@ class SeaDisplay extends Display {
 		var frameSize = 64;
 
 		this.world = world;
-
-		trace("MAX WIDTH " + width);
 
 		this.buffer = new Buffer<Sprite>(1, 10, true);
         this.program = new Program(this.buffer);
@@ -91,7 +94,6 @@ class SeaDisplay extends Display {
 
 		islandsBuffer = new Buffer<Sprite>(1, 5, true);
 		islandsProgram = new Program(islandsBuffer);
-
 
 		bgProgram.injectIntoVertexShader(" ", true);
 
@@ -216,8 +218,8 @@ class SeaDisplay extends Display {
 		this.addProgram(this.bgProgram);
 		this.addProgram(this.islandsProgram);
 		this.addProgram(seaProgram);
-        this.addProgram(this.program);
 		this.addProgram(this.wavesProgram);
+		this.addProgram(this.program);
 
 
 		this.members = {
@@ -347,6 +349,7 @@ class SeaDisplay extends Display {
 				level: fishData.newFish.level,
 				gain: fishData.newFish.gain,
 				tile: fishData.newFish.tile,
+				follow: fishData.newFish.follow,
 				damage: fishData.newFish.damage,
 			}, Std.int(distrib));
 
@@ -354,8 +357,60 @@ class SeaDisplay extends Display {
 		}
 	}
 
-	public function update(player:Player, world:World) {
+	public function update(player:Player, world:World, dt:Float) {
 		var fishes = this.members.fishes;
+		// if (fishes.fishes[0] != null) {
+		// 	var f = fishes.fishes[0];
+		// 	f.color = Color.BLUE;
+		// 	// trace(player.x, fishes.fishes[0]?.x);
+
+		// 	var dx = f.x - player.x;
+		// 	var dy = f.y - player.y;
+		// 	var d = Math.sqrt(dx * dx + dy * dy);
+
+		// 	trace(d);
+		// }
+
+		for (f in fishes.fishes) {
+			var dx = f.x - player.x;
+			var dy = f.y - player.y;
+			var d = Math.sqrt(dx * dx + dy * dy);
+
+			if (f.follow) {
+				switch (f.state) {
+					case IDLE:
+						if (d < triggerDistance && !player.onPlatform) {
+							// trace("PLAYER ON PLATOFMR: " + player.onPlatform);
+							f.state = AGGRESSIVE;
+						}
+					case AGGRESSIVE:
+						if (d > triggerDistance) {
+							f.state = IDLE;
+						} else if (d < escapeDistance) {
+							f.state = ESCAPE;
+							escapeTimer = escapeDuration;
+						} else {
+							var angle = Math.atan2(dy, dx);
+							f.body.velocity.x = -Math.cos(angle) * 300;
+							f.body.velocity.y = -Math.sin(angle) * 300;
+							f.angle = angle * (180 / std.Math.PI);
+							f.update(dt);
+						}
+					case ESCAPE:
+						if (escapeTimer > 0 && player.isMoving) {
+							escapeTimer -= 1 / 60;
+							var angle = Math.atan2(dy, dx);
+							f.angle = 0;
+							f.body.velocity.x = -500;
+							f.body.velocity.y = 0;
+							f.isSecret = true;
+						} else {
+							f.state = IDLE;
+						}
+				}
+			}
+		}
+
 		if (player.x - (lastPlatform?.body.x ?? -platformSpacing) >= platformSpacing) {
 			if (std.Math.random() < platformSpacing) {
 				var num = Std.random(3) + 1;
@@ -382,22 +437,17 @@ class SeaDisplay extends Display {
 			}
 		}
 
-		var idx = 0;
-		// for (i in platforms.platforms) {
-		// 	trace('ISLAND ${idx}: ' + i.body.x);
-		// 	idx++;
-		// }
+		if (curData.length > 0 && fishes.fishes.length < 0.4 * fishThreshold) {
+			redistribute();
+		}
 
 		for (f in fishes.fishes) {
-			f.update();
+			f.update(dt);
+
 			if (!this.isPointInside(Std.int(f.x), Std.int(f.y))) {
 				fishes.fishes.remove(f);
 				fishes.bodies.remove(f.body);
 				f.kill();
-			}
-			if (f.x < (this.width / 2) * 0.1 && f.check) {
-				fishes.fishes.filter(f -> f.check).iter(f -> f.check = false);
-				redistribute();
 			}
 		}
 
@@ -425,6 +475,89 @@ class Background implements Element {
 	@texPosX @varying @formula("uTime * -20.0") public var txOffset:Int;
 
     var OPTIONS = { texRepeatX: true, texRepeatY: true, blend: true };
+}
+
+class PlatformClass implements Element {
+	@posX @varying @set("Position") public var x:Float = 0.0;
+	@posY @varying @set("Position") public var y:Float = 0.0;
+
+	@sizeX public var w:Float = 0.0;
+	@sizeY public var h:Float;
+
+	@color public var color:Color = 0x000000ff;
+
+	@pivotX @const @formula("w * 0.5") public var pivotX:Float = 0.0;
+	@pivotY @const @formula("h * 0.5") public var pivotY:Float = 0.0;
+
+	public function init() {
+		var tileScale = 30;
+
+		var platform:Platform = {tiles: [], x: 0, y: 0, body: null};
+
+		var dirt = tileNum; 
+		var l = tileNum + 1;
+		var m = tileNum + 2;
+		var r = tileNum + 3;
+
+		for (yTile in 0...h) {
+			for (xTile in 0...w) {
+				var tileN = 0;
+
+				var tile = new Sprite(islandsBuffer, world, Color.WHITE, {
+					x: (xTile*tileScale)+x,
+					y: (yTile*tileScale)+y,
+					kinematic: true,
+					velocity_x: -50,
+					mass: 10,
+					shape: {
+						type: RECT,
+						width: tileScale,
+						height: tileScale,
+					},
+				});
+
+				if (xTile == 0 && yTile == 0) tileN = l; 
+				else if (xTile == w - 1 && yTile == 0) tileN = r;
+				else if (xTile < w - 1 && yTile == 0) tileN = m;
+				else if (yTile > 0) tileN = dirt; 
+
+				tile.tile = tileN;
+
+				platform.tiles.push(tile);
+				platforms.bodies.push(tile.body);
+			}
+		}
+
+		platform.x = platform.tiles[0].x;
+		platform.y = platform.tiles[0].y;
+		platform.body = platform.tiles[0].body;
+
+
+		platforms.platforms.push(platform);
+
+		if (withCoin) {
+			var randomTile = platform.tiles[Std.random(w)];
+			var coin = new Sprite(islandsBuffer, world, Color.YELLOW, {
+				x: randomTile.body.x, 
+				y: randomTile.body.y - 80, 
+				kinematic: true,
+				velocity_x: randomTile.body.velocity.x, 
+				mass: 10,
+				shape: {
+					type: CIRCLE, 
+					width: 50, 
+					height: 50
+				}
+			});
+
+			coin.tile = 14;
+
+			coins.sprts.push(coin);
+			coins.bodies.push(coin.body);
+		}
+
+		return platform;
+	}
 }
 
 

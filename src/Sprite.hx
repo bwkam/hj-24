@@ -20,7 +20,7 @@ class Sprite implements Element {
 	@pivotX @const @formula("w * 0.5") public var pivotX:Float = 0.0;
 	@pivotY @const @formula("h * 0.5") public var pivotY:Float = 0.0;
 
-	@rotation var angle:Float = 0.0;
+	@rotation public var angle:Float = 0.0;
 
 	@texTile() public var tile:Int = 0;
 
