@@ -1,0 +1,11 @@
+{
+    "data": [
+        {
+            "score": 100,
+            "speed": 100, 
+            "bg": "",
+            "newFish": "",
+            "playerTex": ""
+        }
+    ]
+}

@@ -1,0 +1,21 @@
+{
+    "packed": true,  
+    "distancefield": true,
+    "kerning": false,
+
+    "width" : 20,
+    "height": 20,
+    "color" : 0x50e040ff,
+    
+    "rangeSplitSize": 0x1000, 
+ 
+    "ranges":[
+        {
+            "image":"kaph.png",
+            "data": "kaph.dat",
+            "slot": {"width":2048, "height":2048},
+            "range":{"min":0x0020, "max":0x2e25}
+        }
+    ]
+
+}
