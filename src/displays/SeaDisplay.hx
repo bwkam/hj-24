@@ -15,6 +15,7 @@ import peote.view.Element;
 import peote.view.Program;
 import peote.view.Program;
 import peote.view.Texture;
+import sprites.Fish;
 import sprites.Player;
 import sprites.Sea;
 import sprites.Waves;
@@ -43,7 +44,7 @@ typedef Platforms = {
 }
 
 class SeaDisplay extends Display {
-	public var buffer:Buffer<Sprite>;
+	public var buffer:Buffer<Fish>;
     var program:Program;
 	var wavesProgram:Program;
 	var bgBuffer:Buffer<Background>;
@@ -69,17 +70,20 @@ class SeaDisplay extends Display {
 	public var escapeTimer:Float = 0;
 	public var escapeDistance = 60;
 	public var escapeDuration = 1.5;
+	public var player:Player;
 
 
 	var seaBuffer:Buffer<Sea>;
 
-    override public function new(x:Int, y:Int, width:Int, height:Int, world:World, color:Color = 0x00000000) {
+	override public function new(x:Int, y:Int, width:Int, height:Int, world:World, color:Color = 0x00000000, player:Player) {
 		super(x, y, width, height, color);
 		var frameSize = 64;
 
 		this.world = world;
 
-		this.buffer = new Buffer<Sprite>(1, 10, true);
+		this.player = player;
+
+		this.buffer = new Buffer<Fish>(1, 10, true);
         this.program = new Program(this.buffer);
 
 		seaBuffer = new Buffer<Sea>(1, 1, true);
@@ -134,6 +138,7 @@ class SeaDisplay extends Display {
 
 			program.addTexture(texture, "custom");
 			program.snapToPixel(1);
+
 			program.blendEnabled = true;
 
 			seaProgram.addTexture(texture, "custom");
@@ -214,7 +219,8 @@ class SeaDisplay extends Display {
 
 
 		// islandsProgram.injectIntoVertexShader(" ", true);
-		
+
+
 		this.addProgram(this.bgProgram);
 		this.addProgram(this.islandsProgram);
 		this.addProgram(seaProgram);
@@ -234,9 +240,14 @@ class SeaDisplay extends Display {
 	public function createPlatform(x:Float, y:Float, w:Int, h:Int, withCoin:Bool):Platform {
 		var tileScale = 30;
 
-		var platform:Platform = {tiles: [], x: 0, y: 0, body: null};
+		var platform:Platform = {
+			tiles: [],
+			x: 0,
+			y: 0,
+			body: null
+		};
 
-		var dirt = tileNum; 
+		var dirt = tileNum;
 		var l = tileNum + 1;
 		var m = tileNum + 2;
 		var r = tileNum + 3;
@@ -246,8 +257,8 @@ class SeaDisplay extends Display {
 				var tileN = 0;
 
 				var tile = new Sprite(islandsBuffer, world, Color.WHITE, {
-					x: (xTile*tileScale)+x,
-					y: (yTile*tileScale)+y,
+					x: (xTile * tileScale) + x,
+					y: (yTile * tileScale) + y,
 					kinematic: true,
 					velocity_x: -50,
 					mass: 10,
@@ -256,26 +267,45 @@ class SeaDisplay extends Display {
 						width: tileScale,
 						height: tileScale,
 					},
-				});
+				}, true);
 
-				if (xTile == 0 && yTile == 0) tileN = l; 
-				else if (xTile == w - 1 && yTile == 0) tileN = r;
-				else if (xTile < w - 1 && yTile == 0) tileN = m;
-				else if (yTile > 0) tileN = dirt; 
+				tile.w = tileScale;
+				tile.h = tileScale;
+
+				if (xTile == 0 && yTile == 0)
+					tileN = l;
+				else if (xTile == w - 1 && yTile == 0)
+					tileN = r;
+				else if (xTile < w - 1 && yTile == 0)
+					tileN = m;
+				else if (yTile > 0)
+					tileN = dirt;
 
 				tile.tile = tileN;
 
+				islandsBuffer.updateElement(tile);
+
 				platform.tiles.push(tile);
-				platforms.bodies.push(tile.body);
 			}
 		}
 
-		platform.x = platform.tiles[0].x;
-		platform.y = platform.tiles[0].y;
-		platform.body = platform.tiles[0].body;
+		var body = new Sprite(islandsBuffer, world, 0x00000000, {
+			x: x,
+			y: y,
+			kinematic: true,
+			velocity_x: -50,
+			mass: 10,
+			shape: {
+				type: RECT,
+				width: tileScale * w,
+				height: tileScale * h,
+			},
+		}, true);
 
 
-		platforms.platforms.push(platform);
+		platform.body = body.body;
+		platforms.bodies.push(body.body);
+
 
 		if (withCoin) {
 			var randomTile = platform.tiles[Std.random(w)];
@@ -301,6 +331,7 @@ class SeaDisplay extends Display {
 		return platform;
 	}
 
+
 	public function set_bg(newBg:String) {
 
 		Loader.image('assets/${newBg}', true, function(image:Image) {
@@ -308,6 +339,7 @@ class SeaDisplay extends Display {
 
 			texture.smoothExpand = true;
 			texture.smoothShrink = true;
+			// texture.
 			texture.setData(image);
 
 			bgProgram.removeAllTexture();
@@ -327,7 +359,7 @@ class SeaDisplay extends Display {
 		return this.bg = newBg;
 	}
 
-	public function updateElement(e:Sprite) {
+	public function updateElement(e:Fish) {
 		this.buffer.updateElement(e);
 	}
 
@@ -359,17 +391,6 @@ class SeaDisplay extends Display {
 
 	public function update(player:Player, world:World, dt:Float) {
 		var fishes = this.members.fishes;
-		// if (fishes.fishes[0] != null) {
-		// 	var f = fishes.fishes[0];
-		// 	f.color = Color.BLUE;
-		// 	// trace(player.x, fishes.fishes[0]?.x);
-
-		// 	var dx = f.x - player.x;
-		// 	var dy = f.y - player.y;
-		// 	var d = Math.sqrt(dx * dx + dy * dy);
-
-		// 	trace(d);
-		// }
 
 		for (f in fishes.fishes) {
 			var dx = f.x - player.x;
@@ -379,7 +400,7 @@ class SeaDisplay extends Display {
 			if (f.follow) {
 				switch (f.state) {
 					case IDLE:
-						if (d < triggerDistance) {
+						if (d < triggerDistance && !player.onPlatform) {
 							f.state = AGGRESSIVE;
 						}
 					case AGGRESSIVE:
@@ -389,6 +410,8 @@ class SeaDisplay extends Display {
 							f.state = ESCAPE;
 							escapeTimer = escapeDuration;
 						} else {
+							if (f.flight >= 2)
+								player.health += 0.01 * dt;
 							var angle = Math.atan2(dy, dx);
 							f.body.velocity.x = -Math.cos(angle) * 300;
 							f.body.velocity.y = -Math.sin(angle) * 300;

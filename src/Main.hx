@@ -1,5 +1,6 @@
 package;
 
+import displays.EndDisplay;
 import displays.PlayerDisplay;
 import displays.SeaDisplay;
 import displays.UI;
@@ -103,14 +104,14 @@ class Main extends Application {
 
 		playerDisplay = new PlayerDisplay(0, 0, window.width, window.height, world);
 
-		seaDisplay = new SeaDisplay(0, 0, window.width * 2, window.height, world, Color.WHITE);
+		seaDisplay = new SeaDisplay(0, 0, window.width * 2, window.height, world, Color.WHITE, playerDisplay.members.player);
 
 		uiDisplay = new UI(window, 0, 0, window.width, window.height);
 
 		playerDisplay.zoom = zoom;
 		seaDisplay.zoom = zoom;
 
-		var maxbound = new Sprite(seaDisplay.buffer, world, 0x00000000, {
+		var maxbound = new Sprite(seaDisplay.islandsBuffer, world, 0x00000000, {
 			x: 0,
 			y: 180,
 			kinematic: true,
@@ -122,7 +123,7 @@ class Main extends Application {
 			}
 		});
 
-		var uppermaxbound = new Sprite(seaDisplay.buffer, world, 0x00000000, {
+		var uppermaxbound = new Sprite(seaDisplay.islandsBuffer, world, 0x00000000, {
 			x: 0,
 			y: 100,
 			kinematic: true,
@@ -134,7 +135,7 @@ class Main extends Application {
 			}
 		});
 
-		var left = new Sprite(seaDisplay.buffer, world, Color.BLACK, {
+		var left = new Sprite(seaDisplay.islandsBuffer, world, Color.BLACK, {
 			x: 0,
 			y: 0,
 			kinematic: true,
@@ -146,7 +147,7 @@ class Main extends Application {
 			}
 		});
 
-		var right = new Sprite(seaDisplay.buffer, world, Color.BLACK, {
+		var right = new Sprite(seaDisplay.islandsBuffer, world, Color.BLACK, {
 			x: window.width,
 			y: 0,
 			kinematic: true,
@@ -158,7 +159,7 @@ class Main extends Application {
 			}
 		});
 
-		var down = new Sprite(seaDisplay.buffer, world, Color.BLACK, {
+		var down = new Sprite(seaDisplay.islandsBuffer, world, Color.BLACK, {
 			x: 0,
 			y: window.height,
 			kinematic: true,
@@ -204,7 +205,6 @@ class Main extends Application {
 					a.velocity = a.velocity.lerp(new Vector2(a.velocity.x, 0), 0.04);
 					if (a.velocity.y < 1.0) {
 						a.velocity.y = 0;
-						trace("fully entered");
 						player.entered = false;
 					}
 				}
@@ -261,7 +261,7 @@ class Main extends Application {
 				var coin = coins.sprts[coinIndex];
 
 				coin.kill();
-				player.score += 50;
+				player.score += 30;
 				uiDisplay.updateScoreOnly(player.score);
 			},
 		});
@@ -300,10 +300,9 @@ class Main extends Application {
 			separate: true,
 		});
 
-		// world.listen(fishes.bodies, platforms.bodies, {
-		// 	separate: true,
-		// 	// enter: (_, _, _) ->,
-		// });
+		world.listen(fishes.bodies, platforms.bodies, {
+			separate: true,
+		});
 	}
 
 	function initEcho() {
@@ -329,17 +328,39 @@ class Main extends Application {
 			if (player.inAir) {
 				if (player.health < 100)
 					player.health += 0.1;
-				uiDisplay.updateHealth(player.health);
 			} else {
-				// player.health -= 0.1;
+				player.health -= 0.1;
 				player.reachedMax = false;
-				uiDisplay.updateHealth(player.health);
 			}
+			
+			uiDisplay.updateHealth(player.health);
 
 			if (player.health < 0) {
+				var display = new EndDisplay(true, window, 0, 0, window.width, window.height, Color.BLACK);
+
+				playerDisplay.hide();
+				seaDisplay.hide();
+				uiDisplay.hide();
+
+				peoteView.addDisplay(display);
+				
 				// dont look
 				Browser.window.location.reload();
 				loaded = false;
+			}
+
+			if (player.score > 2000) {
+				loaded = false;
+
+				playerDisplay.hide();
+				seaDisplay.hide();
+
+				peoteView.removeDisplay(playerDisplay);
+				peoteView.removeDisplay(seaDisplay);
+
+				seaDisplay.hide();
+				uiDisplay.hide();
+				var display = new EndDisplay(false, window, 0, 0, window.width, window.height, Color.BLACK);
 			}
 
 			var i = 0;

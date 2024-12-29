@@ -57,6 +57,8 @@ class UI extends PeoteUIDisplay {
 	public var font:Font<MyFontStyle>;
 	public var fs:MyFontStyle;
 	public var curTime:Float;
+	public var heartProgram:Program;
+	public var heartBuffer:Buffer<Sprite>;
 
 	public var rate:Float = 0.0;
 
@@ -86,6 +88,10 @@ class UI extends PeoteUIDisplay {
 		fishProgram = new Program(fishBuffer);
 		fishProgram.blendEnabled = true;
 
+		heartBuffer = new Buffer<Sprite>(1, 1, true);
+
+		heartProgram = new Program(heartBuffer);
+		heartProgram.blendEnabled = true;
 
 		Loader.image("assets/spritesheet.png", true, function(image:Image) {
 			var texture = new Texture(image.width, image.height);
@@ -97,6 +103,20 @@ class UI extends PeoteUIDisplay {
 
 			fishProgram.addTexture(texture, "custom");
 			fishProgram.snapToPixel(1);
+
+			isReady = true;
+		});
+
+		Loader.image("assets/heart.png", true, function(image:Image) {
+			var texture = new Texture(image.width, image.height);
+			texture.tilesX = Std.int(image.width / frameSize);
+			texture.tilesY = Std.int(image.height / frameSize);
+			texture.smoothExpand = true;
+			texture.smoothShrink = true;
+			texture.setData(image);
+
+			heartProgram.addTexture(texture, "custom");
+			heartProgram.snapToPixel(1);
 
 			isReady = true;
 		});
@@ -123,11 +143,25 @@ class UI extends PeoteUIDisplay {
 
 		this.add(healthBar);
 
+		var heart = new Sprite(heartBuffer, null, Color.WHITE, {
+			x: 0,
+			y: 4.5,
+			kinematic: false,
+			mass: 10,
+			shape: {
+				type: RECT,
+				width: 45,
+				height: 45,
+			}
+		}, false);
+
 		PeoteUIDisplay.registerEvents(window);
 		//
 
         this.addProgram(textProgram);
+		this.addProgram(heartProgram);
 		this.addProgram(fishProgram);
+
 	}
 
 	public function updateScore(x:Int, f:Fish) {

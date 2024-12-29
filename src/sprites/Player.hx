@@ -21,7 +21,7 @@ class Player extends Sprite {
 	public var entered:Bool;
 	public var level:Int = 2;
 	public var score:Int = 0;
-	public var health:Float = 100; 
+	public var health(default, set):Float = 100; 
 	public var gold:Int = 0;
 	public var boost:Int = 0; 
 	public var inAir:Bool = false;
@@ -40,6 +40,14 @@ class Player extends Sprite {
 	override public function new(buffer:Buffer<Sprite>, world:World, c:Color, _options:BodyOptions) {
 		super(buffer, world, c, _options);
 		this.buffer = buffer;
+	}
+
+	function set_health(x:Float) {
+		if (x > 100) {
+			return this.health = 100;
+		} else {
+			return this.health = x;
+		}
 	}
 
 
@@ -61,6 +69,10 @@ class Player extends Sprite {
 			isMoving = true;
 			isMovingDown = true;
 		} 
+
+		// if (keyCode == KeyCode.K) {
+		// 	this.health += 100;
+		// }
 
 		if (keyCode == KeyCode.D || keyCode == KeyCode.RIGHT) {
 			this.body.velocity.x = vx;

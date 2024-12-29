@@ -12,7 +12,7 @@ import sprites.Fish;
 using Lambda;
 
 class Fishes {
-	public var buffer:Buffer<Sprite>;
+	public var buffer:Buffer<Fish>;
 	public var fishes:Array<Fish> = [];
 	public var program:Program;
 	public var display:Display;
@@ -21,7 +21,7 @@ class Fishes {
 	public var speed(default, set):Int = -800;
 	public var activeFishes:Array<FishConfig> = [];
 
-	public function new(display:Display, world:World, buffer:Buffer<Sprite>, program:Program) {
+	public function new(display:Display, world:World, buffer:Buffer<Fish>, program:Program) {
 		this.display = display;
 		this.world = world;
 		this.buffer = buffer; 
